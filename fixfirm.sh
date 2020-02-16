@@ -6,12 +6,18 @@ update_initramfs="sudo update-initramfs -u" # -u means to update
 firmware_paths=()                           # stores firmware module paths
 firmware_prefix="/lib/firmware/"            # where firmware modules live
 
+# silents commands' output
+stfu () {
+  "$@" >/dev/null 2>&1
+  return $?
+}
+
 # get missing firmware
 get_missing_firmware () {
   # 1. redirect stderr to stdout
   # 2. redirect stdout to /dev/null
   # 3. use the $() to capture the redirected stderr
-  missing_firmware=$(${update_initramfs} 2>&1 > /dev/null)
+  missing_firmware=$(${update_initramfs} 2>&1 >/dev/null)
 }
 
 # cuts out a single name
@@ -46,9 +52,9 @@ clone_git () {
   # maybe we have already cloned the linux-firmware.git earlier?
   if [ -d "${firmware_dir}" ]; then
     cd ${firmware_dir}
-    git pull origin master
+    stfu git pull origin master
   else
-    git clone ${linux_firmware_git}
+    stfu git clone ${linux_firmware_git}
     cd ${firmware_dir}
   fi
 }
@@ -61,8 +67,37 @@ copy_modules () {
   done
 }
 
-clean_up () {
-  rm 0 # remove the empty descriptor
+# check for missing dependencies
+dep_check() {
+  if ! stfu command -v "$1"
+  then
+    print_message error "Missing package: $1"
+    exit 1
+  fi
+}
+
+# check if the script is run as root
+is_root () {
+  if [[ $EUID -ne 0 ]]; then
+    print_message error "Please run as root"
+    exit 1
+  fi
+}
+
+# did we find any missing firmware modules, at all?
+is_firmware_missing () {
+  # if the length of `missing_firmware` is zero
+  if [[ -z "$missing_firmware" ]]; then
+    print_message good "No missing firmware found"
+    exit 1
+  fi
+}
+
+# outputs missing firmware modules
+found_missing_firmware () {
+  for i in "${firmware_paths[@]}"; do
+      echo "$i"
+  done
 }
 
 # print informational messages
@@ -77,40 +112,29 @@ print_message () {
   esac
 }
 
-# --------------------------------------------------- #
-#                   RUN THE SCRIPT
-# --------------------------------------------------- #
+# runs the script
+run () {
+  dep_check git
+  is_root
+  
+  print_message good "Searching for missing firmware modules"
+  get_missing_firmware
 
-# Check if is run under root
-if [[ $EUID -ne 0 ]]; then
-  print_message error "Please run as root"
-  exit 1
-fi
+  is_firmware_missing
+  tokenize_firmware
 
-print_message good "Searching for missing firmware modules"
-get_missing_firmware
+  print_message good "Found the following missing modules:"
+  found_missing_firmware
 
-# `-z STRING` ==> the length of STRING is zero
-if [[ -z "$missing_firmware" ]]; then
-  print_message good "No missing firmware found"
-  exit 1
-fi
+  print_message good "Cloning: linux-firmware.git"
+  clone_git
 
-tokenize_firmware
+  print_message good "Copying modules to /lib/firmware/"
+  copy_modules
 
-print_message good "Found the following missing modules:"
-for i in "${firmware_paths[@]}"; do
-    echo "$i"
-done
+  print_message good "Issuing: update-initramfs -u"
+  get_missing_firmware
+  print_message good "All done"
+}
 
-print_message good "Cloning: linux-firmware.git"
-clone_git
-
-print_message good "Copying modules to /lib/firmware/"
-copy_modules
-
-print_message good "Issuing: update-initramfs -u"
-get_missing_firmware
-
-clean_up
-print_message good "All done"
+run
