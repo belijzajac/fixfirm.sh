@@ -62,8 +62,16 @@ clone_git () {
 # copies missing firmware modules from `firmware/` to `/lib/firmware/`
 copy_modules () {
   for mod in "${firmware_paths[@]}"; do
-    dest_dir=$(echo ${mod} | cut -d '/' -f 1)
-    cp "${mod}" "${firmware_prefix}${dest_dir}/"
+    # cuts out firmware's name (e.g. firmware.bin)
+    # `rev` reverses the string, so we cut out its name as the first field
+    name=$(echo ${mod} | rev | cut -d '/' -f 1 | rev)
+
+    # path to the firmware omitting its name
+    path=$(echo ${mod%${name}})
+
+    # create directory if not existing, and copy the firmware over to it
+    mkdir -p ${firmware_prefix}${path}
+    cp "${mod}" "${firmware_prefix}${path}${name}"
   done
 }
 
