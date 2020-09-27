@@ -6,21 +6,21 @@
 
 ## About
 
-It's a simple Bash script that detects missing firmware in different modules, and fixes them with the existing ones found in the most recent Linux firmware repository.
+It's a simple Bash script that detects missing firmware in different firmware modules, and tries to fix the issues that come from them by fetching the most recent and pre-existing firmware modules found in the upstream Linux firmware git repository.
 
-### How it works
+### The process behing the script
 
 1.   Issues `update-initramfs -u` and collects infromation about missing firmware
 2.   Clones `git://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git`
 3.   Copies the missing firmware to `/lib/firmware/`
 
-### Why
+### Why was this needed?
 
-As a matter of fact, I'm a regular user of the Liquorix kernel on Debian testing/sid, and whenever I update the kernel to a newer version, I get the following warning messages:
+As a matter of fact, I'm a regular user of the Liquorix kernel on Debian Sid, and whenever I update the kernel to a newer version, I face the following warning messages whenever I update the system and get past the kernel compilation process:
 
 ![missing-modules](img/missing_modules.png)
 
-It shows that the Intel i915 chip lacks some firmware, even though I have already installed the package `xserver-xorg-video-intel` that supports the Intel i9xx family chipset. Since doing everything by hand on different machines became tiresome, I came up with this project idea.
+It shows that the Intel i915 chip lacks some firmware, even though I have already installed the package `xserver-xorg-video-intel` that supports the Intel i9xx family chipset. Since fixing the same issues by hand all over again on different Linux powered machines has become cumbersome, I came up with this project idea to help me automate the system administration of Linux home servers.
 
 ## License
 
