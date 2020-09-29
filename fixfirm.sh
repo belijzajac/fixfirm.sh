@@ -47,8 +47,6 @@ tokenize_firmware () {
 
 # clone Linux firmware repository
 clone_git () {
-  mkdir -p __temp && cd __temp
-
   # maybe we have already cloned the linux-firmware.git earlier?
   if [ -d "${firmware_dir}" ]; then
     cd ${firmware_dir}
@@ -97,8 +95,19 @@ is_firmware_missing () {
   # if the length of `missing_firmware` is zero
   if [[ -z "$missing_firmware" ]]; then
     print_message good "No missing firmware found"
-    exit 1
+    exit 0
   fi
+}
+
+# set the script's initial working directory
+set_working_dir () {
+  working_dir=$(pwd)
+}
+
+# removes temporary files
+clean_up () {
+  stfu rm -rf "${working_dir}/${firmware_dir}" # you may want to keep this
+  stfu rm "${working_dir}/0"                   # some file descriptor
 }
 
 # outputs missing firmware modules
@@ -122,6 +131,7 @@ print_message () {
 
 # runs the script
 run () {
+  set_working_dir
   dep_check git
   is_root
   
@@ -142,7 +152,10 @@ run () {
 
   print_message good "Issuing: update-initramfs -u"
   get_missing_firmware
-  print_message good "All done"
+
+  print_message good "Cleaning up"
+  clean_up
+  print_message good "All done!"
 }
 
 run
