@@ -22,7 +22,7 @@ get_missing_firmware () {
 
 # cuts out a single name
 cut_out_firmware_name () {
-  firm_token=$(echo ${missing_firmware} | cut -d ' ' -f $1 -s)
+  firm_token=$(echo "${missing_firmware}" | cut -d ' ' -f "$1" -s)
 
   # cut out the prefix `/lib/firmware/`
   firm_token=${firm_token/#$firmware_prefix}
@@ -36,11 +36,10 @@ tokenize_firmware () {
   cut_out_firmware_name $counter
 
   # while firm_token has something in it
-  while [ $firm_token > 0 ]
+  while [ -n "$firm_token" ]
   do
-    firmware_paths+=($firm_token)
+    firmware_paths+=("$firm_token")
     counter=$((counter+8))
-
     cut_out_firmware_name $counter
   done
 }
@@ -62,14 +61,14 @@ copy_modules () {
   for mod in "${firmware_paths[@]}"; do
     # cuts out firmware's name (e.g. firmware.bin)
     # `rev` reverses the string, so we cut out its name as the first field
-    name=$(echo ${mod} | rev | cut -d '/' -f 1 | rev)
+    name=$(echo "${mod}" | rev | cut -d '/' -f 1 | rev)
 
     # path to the firmware omitting its name
-    path=$(echo ${mod%${name}})
+    path="${mod%${name}}"
 
     # create directory if not existing, and copy the firmware over to it
-    mkdir -p ${firmware_prefix}${path}
-    cp "${mod}" "${firmware_prefix}${path}${name}"
+    mkdir -p ${firmware_prefix}"${path}"
+    stfu cp "${mod}" "${firmware_prefix}${path}${name}"
   done
 }
 
@@ -106,7 +105,7 @@ set_working_dir () {
 
 # removes temporary files
 clean_up () {
-  stfu rm -rf "${working_dir}/${firmware_dir}" # you may want to keep this
+  #stfu rm -rf "${working_dir}/${firmware_dir}" # you may want to keep this
   stfu rm "${working_dir}/0"                   # some file descriptor
 }
 
@@ -152,6 +151,7 @@ run () {
 
   print_message good "Issuing: update-initramfs -u"
   get_missing_firmware
+  found_missing_firmware # TODO: output the non-existent firmware modules
 
   print_message good "Cleaning up"
   clean_up

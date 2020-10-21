@@ -1,0 +1,8 @@
+# Directory holding the cloned firmware modules
+linux-firmware/
+
+# CLion files
+.idea/
+
+# Plasma file manager's configuration file
+.directory
