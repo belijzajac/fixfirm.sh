@@ -15,6 +15,7 @@ stfu () {
 
 # get missing firmware
 get_missing_firmware () {
+  print_message good "Searching for missing firmware modules"
   # 1. redirect stderr to stdout
   # 2. redirect stdout to /dev/null
   # 3. use the $() to capture the redirected stderr
@@ -47,6 +48,8 @@ tokenize_firmware () {
 
 # clone Linux firmware repository
 clone_git () {
+  print_message good "Cloning: linux-firmware.git"
+
   # maybe we have already cloned the linux-firmware.git earlier?
   if [[ -d ${firmware_dir} ]]; then
     cd ${firmware_dir}
@@ -59,6 +62,8 @@ clone_git () {
 
 # copies missing firmware modules from `firmware/` to `/lib/firmware/`
 copy_modules () {
+  print_message good "Copying modules to /lib/firmware/"
+
   for mod in "${!firmware_paths[@]}"; do
     # cuts out firmware's name (e.g. firmware.bin)
     # `rev` reverses the string, so we cut out its name as the first field
@@ -80,6 +85,12 @@ check_if_source_exists () {
     firmware_paths[${1}]="FIXED"
     fixed_count=$((fixed_count+1))
   fi
+}
+
+silently_update_initramfs () {
+  print_message good "Issuing: update-initramfs -u"
+  # shellcheck disable=SC2086
+  stfu ${update_initramfs}
 }
 
 # check for missing dependencies
@@ -115,38 +126,49 @@ set_working_dir () {
 
 # removes temporary files
 clean_up () {
+  print_message good "Cleaning up"
   #stfu rm -rf "${working_dir}/${firmware_dir}" # you may want to keep this
   stfu rm "${working_dir}/0"                   # some file descriptor
 }
 
 # outputs missing firmware modules
 found_missing_firmware () {
+  print_message good "Found the following missing modules:"
   for firm in "${!firmware_paths[@]}"; do
     echo "$firm"
   done
 }
 
-firmware_status () {
+print_firmware_status () {
+  # sort the keys according to string numerical value, reverse the order, and take the top element
+  max_str_lenght=$(echo "${!firmware_paths[@]}" | sort -nr | head -n1)
+  max_str_lenght=${#max_str_lenght}
+
+  # "const char * format" for printf
+  format="%-${max_str_lenght}s ==> %s\n" # e.g. "%-58s ==> %s\n"
+
   for firm in "${!firmware_paths[@]}"; do
-    echo "${firm}" " ==> " "${firmware_paths[${firm}]}"
+    # shellcheck disable=SC2182
+    # shellcheck disable=SC2059
+    printf "${format}" "${firm}" "${firmware_paths[${firm}]}"
   done
 }
 
 print_summary () {
-  stfu "${update_initramfs}"
-  firmware_status
-
-  # next print what was fixed and what not
-  # ---------
-  # fixed: 5
-  # not fixed: 0
+  print_message good "Summary:"
+  print_firmware_status
+  printf "%s\n" "------------------------"
+  printf "Fixed:     %s\n" ${fixed_count}
+  printf "Not found: %s\n" $((${#firmware_paths[@]} - fixed_count))
+  printf "%s\n" "------------------------"
+  print_message good "All done!"
 }
 
 # print informational messages
 print_message () {
   case "$1" in
     "good")
-      printf '\E[32m'; echo "GOOD: $2"; printf '\E[0m'
+      printf '\E[32m'; echo "$2"; printf '\E[0m'
       ;;
     "error")
       printf '\E[31m'; echo "ERROR: $2"; printf '\E[0m'
@@ -159,28 +181,15 @@ run () {
   set_working_dir
   dep_check git
   is_root
-
-  print_message good "Searching for missing firmware modules"
   get_missing_firmware
-
   is_firmware_missing
   tokenize_firmware
-
-  print_message good "Found the following missing modules:"
   found_missing_firmware
-
-  print_message good "Cloning: linux-firmware.git"
   clone_git
-
-  print_message good "Copying modules to /lib/firmware/"
   copy_modules
-
-  print_message good "Issuing: update-initramfs -u"
-  print_summary
-
-  print_message good "Cleaning up"
+  silently_update_initramfs
   clean_up
-  print_message good "All done!"
+  print_summary
 }
 
 run
