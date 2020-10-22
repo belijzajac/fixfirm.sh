@@ -24,7 +24,8 @@ get_missing_firmware () {
 
 # cuts out a single name
 cut_out_firmware_name () {
-  firm_token=$(echo "${missing_firmware}" | cut -d ' ' -f "$1" -s)
+  # shellcheck disable=SC2086
+  firm_token=$(echo ${missing_firmware} | cut -d ' ' -f $1 -s)
 
   # cut out the prefix `/lib/firmware/`
   firm_token=${firm_token/#$firmware_prefix}
@@ -40,7 +41,7 @@ tokenize_firmware () {
   # while firm_token has something in it
   while [[ -n $firm_token ]]
   do
-    firmware_paths+=(["$firm_token"]="NOT FOUND")
+    firmware_paths+=([$firm_token]="NOT FOUND")
     counter=$((counter+8))
     cut_out_firmware_name $counter
   done
@@ -70,8 +71,8 @@ copy_modules () {
     name=$(echo "${mod}" | rev | cut -d '/' -f 1 | rev)
 
     # path to the firmware omitting its name
-    path="${mod%${name}}"
-    check_if_source_exists mod name path
+    path=${mod%${name}}
+    check_if_source_exists "${mod}" "${name}" "${path}"
   done
 }
 
@@ -139,13 +140,21 @@ found_missing_firmware () {
   done
 }
 
+# finds lenght of the longest string in firmware_paths
+find_max_str_length () {
+  max_str_len=0
+  for firm in "${!firmware_paths[@]}"; do
+    if [[ ${#firm} -gt ${max_str_len} ]]; then
+      max_str_len=${#firm}
+    fi
+  done
+}
+
 print_firmware_status () {
-  # sort the keys according to string numerical value, reverse the order, and take the top element
-  max_str_lenght=$(echo "${!firmware_paths[@]}" | sort -nr | head -n1)
-  max_str_lenght=${#max_str_lenght}
+  find_max_str_length
 
   # "const char * format" for printf
-  format="%-${max_str_lenght}s ==> %s\n" # e.g. "%-58s ==> %s\n"
+  format="%-${max_str_len}s ==> %s\n" # e.g. "%-58s ==> %s\n"
 
   for firm in "${!firmware_paths[@]}"; do
     # shellcheck disable=SC2182
@@ -171,7 +180,7 @@ print_message () {
       printf '\E[32m'; echo "$2"; printf '\E[0m'
       ;;
     "error")
-      printf '\E[31m'; echo "ERROR: $2"; printf '\E[0m'
+      printf '\E[31m'; echo "$2"; printf '\E[0m'
       ;;
   esac
 }
