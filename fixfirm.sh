@@ -44,9 +44,7 @@ parse_arguments () {
         ;;
       -k|--keep)
         cmd_args["keep"]="True"
-        run_necessary_steps
-        run_optional_steps
-        exit 0
+        break
         ;;
       -*)
         print_message error "Unknown parameter passed: $1"
