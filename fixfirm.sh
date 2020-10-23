@@ -6,8 +6,60 @@ update_initramfs="sudo update-initramfs -u" # -u means to update
 declare -A firmware_paths                   # stores firmware module paths in key-value pairs
 firmware_prefix="/lib/firmware/"            # where firmware modules live
 fixed_count=0                               # number of firmware modules we've managed to fix
+declare -A cmd_args=(["keep"]="False")      # command line arguments
 
-# silents commands' output
+# print detailed usage information
+print_usage () {
+  cat << USAGE
+
+   __ _       __ _                      _
+  / _(_)     / _(_)                    | |
+ | |_ ___  _| |_ _ _ __ _ __ ___    ___| |__
+ |  _| \\ \\/ /  _| | '__| '_ \` _ \  / __| '_ \\
+ | | | |>  <| | | | |  | | | | | |_\__ \ | | |
+ |_| |_/_/\\_\\_| |_|_|  |_| |_| |_(_)___/_| |_|
+
+
+Usage:
+  bash fixfirm.sh [ARGUMENTS]
+
+ARGUMENTS:
+  -h,--help      Display this help and exit.
+  -m,--missing   Print missing firmware modules and exit.
+  -k,--keep      Keep the cloned/fetched Linux firmware git repository from deletion.
+USAGE
+}
+
+# parse arguments passed to the script
+parse_arguments () {
+  while [[ -n $# ]]; do
+    case $1 in
+      -h|--help)
+        print_usage
+        exit 0
+        ;;
+      -m|--missing)
+        run_necessary_steps
+        exit 0
+        ;;
+      -k|--keep)
+        cmd_args["keep"]="True"
+        run_necessary_steps
+        run_optional_steps
+        exit 0
+        ;;
+      -*)
+        print_message error "Unknown parameter passed: $1"
+        exit 1
+        ;;
+      *)
+        break
+        ;;
+    esac;
+  done
+}
+
+# silence commands' output
 stfu () {
   "$@" >/dev/null 2>&1
   return $?
@@ -22,7 +74,7 @@ get_missing_firmware () {
   missing_firmware=$(${update_initramfs} 2>&1 >/dev/null)
 }
 
-# cuts out a single name
+# cut out a single name
 cut_out_firmware_name () {
   # shellcheck disable=SC2086
   firm_token=$(echo ${missing_firmware} | cut -d ' ' -f $1 -s)
@@ -31,7 +83,7 @@ cut_out_firmware_name () {
   firm_token=${firm_token/#$firmware_prefix}
 }
 
-# tokenizes (cuts out all) module names
+# tokenize (cuts out all) module names
 tokenize_firmware () {
   counter=5
 
@@ -61,7 +113,7 @@ clone_git () {
   fi
 }
 
-# copies missing firmware modules from `firmware/` to `/lib/firmware/`
+# copy missing firmware modules from `firmware/` to `/lib/firmware/`
 copy_modules () {
   print_message good "Copying modules to /lib/firmware/"
 
@@ -76,7 +128,7 @@ copy_modules () {
   done
 }
 
-# checks if the firmware module exists in the cloned git repository's directory
+# check if the firmware module exists in the cloned git repository's directory
 check_if_source_exists () {
   if [[ -f ${1} ]]; then
     mkdir -p ${firmware_prefix}"${3}"
@@ -88,6 +140,7 @@ check_if_source_exists () {
   fi
 }
 
+# silently update an initramfs image
 silently_update_initramfs () {
   print_message good "Issuing: update-initramfs -u"
   # shellcheck disable=SC2086
@@ -125,14 +178,20 @@ set_working_dir () {
   working_dir=$(pwd)
 }
 
-# removes temporary files
+# remove temporary files
 clean_up () {
   print_message good "Cleaning up"
-  #stfu rm -rf "${working_dir}/${firmware_dir}" # you may want to keep this
-  stfu rm "${working_dir}/0"                   # some file descriptor
+
+  # remove linux git repo files
+  if ! [[ ${cmd_args["keep"]} == "True" ]]; then
+    stfu rm -rf "${working_dir}/${firmware_dir}"
+  fi
+
+  # some file descriptor
+  stfu rm "${working_dir}/0"
 }
 
-# outputs missing firmware modules
+# output missing firmware modules
 found_missing_firmware () {
   print_message good "Found the following missing modules:"
   for firm in "${!firmware_paths[@]}"; do
@@ -140,7 +199,7 @@ found_missing_firmware () {
   done
 }
 
-# finds lenght of the longest string in firmware_paths
+# find lenght of the longest string in firmware_paths
 find_max_str_length () {
   max_str_len=0
   for firm in "${!firmware_paths[@]}"; do
@@ -150,6 +209,7 @@ find_max_str_length () {
   done
 }
 
+# print information about each firmware whether we managed to fix it or not
 print_firmware_status () {
   find_max_str_length
 
@@ -163,6 +223,7 @@ print_firmware_status () {
   done
 }
 
+# print summary at the end of the script
 print_summary () {
   print_message good "Summary:"
   print_firmware_status
@@ -185,8 +246,8 @@ print_message () {
   esac
 }
 
-# runs the script
-run () {
+# necessary steps: run checks and obtain info about missing firmware
+run_necessary_steps () {
   set_working_dir
   dep_check git
   is_root
@@ -194,6 +255,10 @@ run () {
   is_firmware_missing
   tokenize_firmware
   found_missing_firmware
+}
+
+# optional steps: fix firmware and print summary
+run_optional_steps () {
   clone_git
   copy_modules
   silently_update_initramfs
@@ -201,4 +266,13 @@ run () {
   print_summary
 }
 
-run
+# script's starting point
+run () {
+  parse_arguments "$@"
+
+  run_necessary_steps
+  run_optional_steps
+  exit 0
+}
+
+run "$@"
