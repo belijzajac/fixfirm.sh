@@ -197,7 +197,7 @@ found_missing_firmware () {
   done
 }
 
-# find lenght of the longest string in firmware_paths
+# find length of the longest string in firmware_paths
 find_max_str_length () {
   max_str_len=0
   for firm in "${!firmware_paths[@]}"; do
@@ -227,7 +227,7 @@ print_summary () {
   print_firmware_status
   printf "%s\n" "------------------------"
   printf "Fixed:     %s\n" ${fixed_count}
-  printf "Not found: %s\n" $((${#firmware_paths[@]} - fixed_count))
+  printf "Not found: %d\n" $((${#firmware_paths[@]} - fixed_count))
   printf "%s\n" "------------------------"
   print_message good "All done!"
 }

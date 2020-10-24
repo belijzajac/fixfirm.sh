@@ -6,11 +6,11 @@
 
 ## About
 
-Observes missing firmware in different firmware modules and tries to fix issues that come from them by fetching the most recent and pre-existing firmware binary modules from the upstream Linux firmware git repository.
+Observes missing firmware in different firmware modules and tries to fix issues that come from them by fetching the most recent and preexisting binary firmware modules from the upstream Linux firmware git repository.
 
-### The process behing the script
+### The process behind the script
 
-1.   Issues `update-initramfs -u` and collects infromation about missing firmware
+1.   Issues `update-initramfs -u` and collects information about missing firmware
 2.   Clones `git://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git`
 3.   Finds relevant missing binary modules and copies them to `/lib/firmware/`
 4.   Runs `update-initramfs -u` once again to update an initramfs image
@@ -23,7 +23,7 @@ Observes missing firmware in different firmware modules and tries to fix issues 
 | `-m` or `--missing` | Print missing firmware modules and exit                      |
 | `-k` or `--keep`    | Keep the cloned/fetched Linux firmware git repository from deletion<br />(useful if you don't want to download 1 GB of data each time you run the script) |
 
-for instance, by typing `bash fixfirm.sh --help` it will display the usage window.
+For instance, by typing `bash fixfirm.sh --help` it will display the usage window.
 
 ### Why was this needed?
 
