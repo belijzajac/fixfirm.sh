@@ -226,7 +226,7 @@ print_summary () {
   print_message good "Summary:"
   print_firmware_status
   printf "%s\n" "------------------------"
-  printf "Fixed:     %s\n" ${fixed_count}
+  printf "Fixed:     %d\n" ${fixed_count}
   printf "Not found: %d\n" $((${#firmware_paths[@]} - fixed_count))
   printf "%s\n" "------------------------"
   print_message good "All done!"
