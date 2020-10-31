@@ -2,7 +2,7 @@
 
 [![License](https://img.shields.io/static/v1?label=license&message=UNLICENSE&color=9cf)](LICENSE)
 
-![FixFirm-preview](img/fixfirm_preview.gif)
+![FixFirm-preview](docs/fixfirm_preview.gif)
 
 ## About
 
@@ -29,7 +29,7 @@ For instance, by typing `bash fixfirm.sh --help` it will display the usage windo
 
 As a matter of fact, I'm a regular user of the Liquorix kernel on Debian Sid, and whenever I update the kernel to a newer version, I face the following warning messages past the kernel compilation process:
 
-![missing-modules](img/missing_modules.png)
+![missing-modules](docs/missing_modules.png)
 
 It shows that the Intel i915 chip lacks some firmware, even though I have already installed the package `xserver-xorg-video-intel` that supports the Intel i9xx family chipset. Since fixing the same issues by hand all over again on different Linux powered machines has become cumbersome, I came up with this project idea to help me automate the system administration of Linux home servers.
 
