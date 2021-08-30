@@ -26,7 +26,7 @@ Usage:
 ARGUMENTS:
   -h,--help      Display this help and exit.
   -m,--missing   Print missing firmware modules and exit.
-  -k,--keep      Keep the cloned/fetched Linux firmware git repository from deletion.
+  -k,--keep      Keep the cloned Linux firmware git repository from deletion.
 USAGE
 }
 
@@ -76,7 +76,6 @@ get_missing_firmware () {
 cut_out_firmware_name () {
   # shellcheck disable=SC2086
   firm_token=$(echo ${missing_firmware} | cut -d ' ' -f $1 -s)
-
   # cut out the prefix `/lib/firmware/`
   firm_token=${firm_token/#$firmware_prefix}
 }
@@ -84,10 +83,8 @@ cut_out_firmware_name () {
 # tokenize (cuts out all) module names
 tokenize_firmware () {
   counter=5
-
   # the below while loop needs a value upon which to check on
   cut_out_firmware_name $counter
-
   # while firm_token has something in it
   while [[ -n $firm_token ]]
   do
@@ -100,7 +97,6 @@ tokenize_firmware () {
 # clone Linux firmware repository
 clone_git () {
   print_message good "Cloning: linux-firmware.git"
-
   # maybe we have already cloned the linux-firmware.git earlier?
   if [[ -d ${firmware_dir} ]]; then
     cd ${firmware_dir}
@@ -114,12 +110,10 @@ clone_git () {
 # copy missing firmware modules from `firmware/` to `/lib/firmware/`
 copy_modules () {
   print_message good "Copying modules to /lib/firmware/"
-
   for mod in "${!firmware_paths[@]}"; do
     # cuts out firmware's name (e.g. firmware.bin)
     # `rev` reverses the string, so we cut out its name as the first field
     name=$(echo "${mod}" | rev | cut -d '/' -f 1 | rev)
-
     # path to the firmware omitting its name
     path=${mod%${name}}
     check_if_source_exists "${mod}" "${name}" "${path}"
@@ -131,7 +125,6 @@ check_if_source_exists () {
   if [[ -f ${1} ]]; then
     mkdir -p ${firmware_prefix}"${3}"
     stfu cp "${1}" "${firmware_prefix}${3}${2}"
-
     # update the information about fixed firmware
     firmware_paths[${1}]="FIXED"
     fixed_count=$((fixed_count+1))
@@ -179,12 +172,10 @@ set_working_dir () {
 # remove temporary files
 clean_up () {
   print_message good "Cleaning up"
-
   # remove linux git repo files
   if ! [[ ${cmd_args["keep"]} == "True" ]]; then
     stfu rm -rf "${working_dir}/${firmware_dir}"
   fi
-
   # some file descriptor
   stfu rm "${working_dir}/0"
 }
@@ -210,10 +201,8 @@ find_max_str_length () {
 # print information about each firmware whether we managed to fix it or not
 print_firmware_status () {
   find_max_str_length
-
   # "const char * format" for printf
   format="%-${max_str_len}s ==> %s\n" # e.g. "%-58s ==> %s\n"
-
   for firm in "${!firmware_paths[@]}"; do
     # shellcheck disable=SC2182
     # shellcheck disable=SC2059
@@ -267,7 +256,6 @@ run_optional_steps () {
 # script's starting point
 run () {
   parse_arguments "$@"
-
   run_necessary_steps
   run_optional_steps
   exit 0

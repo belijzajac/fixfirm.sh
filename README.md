@@ -21,7 +21,7 @@ Observes missing firmware in different firmware modules and tries to fix issues 
 | ------------------- | ------------------------------------------------------------ |
 | `-h` or `--help`    | Display the usage window and exit                            |
 | `-m` or `--missing` | Print missing firmware modules and exit                      |
-| `-k` or `--keep`    | Keep the cloned/fetched Linux firmware git repository from deletion<br />(useful if you don't want to download 1 GB of data each time you run the script) |
+| `-k` or `--keep`    | Keep the cloned Linux firmware git repository from deletion<br />(useful if you don't want to download 1 GB of data each time you run the script) |
 
 For instance, by typing `bash fixfirm.sh --help` it will display the usage window.
 
