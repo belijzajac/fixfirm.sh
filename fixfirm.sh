@@ -115,7 +115,7 @@ copy_modules () {
     # `rev` reverses the string, so we cut out its name as the first field
     name=$(echo "$mod" | rev | cut -d '/' -f 1 | rev)
     # path to the firmware omitting its name
-    path=${mod%${name}}
+    path=${mod%"${name}"}
     check_if_source_exists "$mod" "$name" "$path"
   done
 }
