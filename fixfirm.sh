@@ -1,10 +1,11 @@
 #!/bin/bash
+# shellcheck disable=SC2086,SC2164
 
 linux_firmware_git="git://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git"
-firmware_dir="linux-firmware"               # directory created after cloning the linux-firmware.git
-update_initramfs="sudo update-initramfs -u" # -u means to update
+firmware_dir="linux-firmware"               # directory created after cloning linux-firmware.git
+update_initramfs="sudo update-initramfs -u" # -u to update
 declare -A firmware_paths                   # stores firmware module paths in key-value pairs
-firmware_prefix="/lib/firmware/"            # where firmware modules live
+firmware_prefix="/lib/firmware/"            # path where firmware modules are located
 fixed_count=0                               # number of firmware modules we've managed to fix
 declare -A cmd_args=(["keep"]="False")      # command line arguments
 
@@ -74,9 +75,8 @@ get_missing_firmware () {
 
 # cut out a single name
 cut_out_firmware_name () {
-  # shellcheck disable=SC2086
-  firm_token=$(echo ${missing_firmware} | cut -d ' ' -f $1 -s)
-  # cut out the prefix `/lib/firmware/`
+  firm_token=$(echo ${missing_firmware} | cut -d ' ' -f "$1" -s)
+  # cut out the `/lib/firmware/` prefix
   firm_token=${firm_token/#$firmware_prefix}
 }
 
@@ -97,13 +97,13 @@ tokenize_firmware () {
 # clone Linux firmware repository
 clone_git () {
   print_message good "Cloning: linux-firmware.git"
-  # maybe we have already cloned the linux-firmware.git earlier?
-  if [[ -d ${firmware_dir} ]]; then
-    cd ${firmware_dir}
-    stfu git pull origin master
+  # maybe we have already cloned linux-firmware.git from earlier?
+  if [[ -d $firmware_dir ]]; then
+    cd $firmware_dir
+    stfu git pull origin main
   else
-    stfu git clone ${linux_firmware_git}
-    cd ${firmware_dir}
+    stfu git clone $linux_firmware_git
+    cd $firmware_dir
   fi
 }
 
@@ -113,20 +113,20 @@ copy_modules () {
   for mod in "${!firmware_paths[@]}"; do
     # cuts out firmware's name (e.g. firmware.bin)
     # `rev` reverses the string, so we cut out its name as the first field
-    name=$(echo "${mod}" | rev | cut -d '/' -f 1 | rev)
+    name=$(echo "$mod" | rev | cut -d '/' -f 1 | rev)
     # path to the firmware omitting its name
     path=${mod%${name}}
-    check_if_source_exists "${mod}" "${name}" "${path}"
+    check_if_source_exists "$mod" "$name" "$path"
   done
 }
 
 # check if the firmware module exists in the cloned git repository's directory
 check_if_source_exists () {
-  if [[ -f ${1} ]]; then
+  if [[ -f $1 ]]; then
     mkdir -p ${firmware_prefix}"${3}"
-    stfu cp "${1}" "${firmware_prefix}${3}${2}"
+    stfu cp "$1" "${firmware_prefix}${3}${2}"
     # update the information about fixed firmware
-    firmware_paths[${1}]="FIXED"
+    firmware_paths[$1]="FIXED"
     fixed_count=$((fixed_count+1))
   fi
 }
@@ -134,7 +134,6 @@ check_if_source_exists () {
 # silently update an initramfs image
 silently_update_initramfs () {
   print_message good "Issuing: update-initramfs -u"
-  # shellcheck disable=SC2086
   stfu ${update_initramfs}
 }
 
@@ -192,7 +191,7 @@ found_missing_firmware () {
 find_max_str_length () {
   max_str_len=0
   for firm in "${!firmware_paths[@]}"; do
-    if [[ ${#firm} -gt ${max_str_len} ]]; then
+    if [[ ${#firm} -gt $max_str_len ]]; then
       max_str_len=${#firm}
     fi
   done
@@ -201,12 +200,8 @@ find_max_str_length () {
 # print information about each firmware whether we managed to fix it or not
 print_firmware_status () {
   find_max_str_length
-  # "const char * format" for printf
-  format="%-${max_str_len}s ==> %s\n" # e.g. "%-58s ==> %s\n"
   for firm in "${!firmware_paths[@]}"; do
-    # shellcheck disable=SC2182
-    # shellcheck disable=SC2059
-    printf "${format}" "${firm}" "${firmware_paths[${firm}]}"
+    printf "%-${max_str_len}s ==> %s\n" "$firm" "${firmware_paths[$firm]}"
   done
 }
 
@@ -215,7 +210,7 @@ print_summary () {
   print_message good "Summary:"
   print_firmware_status
   printf "%s\n" "------------------------"
-  printf "Fixed:     %d\n" ${fixed_count}
+  printf "Fixed:     %d\n" $fixed_count
   printf "Not found: %d\n" $((${#firmware_paths[@]} - fixed_count))
   printf "%s\n" "------------------------"
   print_message good "All done!"
