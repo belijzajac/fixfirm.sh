@@ -2,7 +2,7 @@
 
 [![license](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
 
-![FixFirm-preview](docs/fixfirm_preview.gif)
+![preview](docs/preview.mp4)
 
 ## About
 
