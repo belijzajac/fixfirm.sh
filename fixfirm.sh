@@ -4,15 +4,15 @@
 # Copyright (C) 2020-2022 Tautvydas Povilaitis (belijzajac) and contributors
 # Distributed under the terms of The GNU Public License v3.0 (GPLv3)
 
-linux_firmware_git="git://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git"
+linux_firmware_git="https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git"
 firmware_dir="linux-firmware"               # directory created after cloning linux-firmware.git
-update_initramfs="sudo update-initramfs -u" # -u to update
+update_initramfs="sudo update-initramfs -u" # -u means to update
 declare -A firmware_paths                   # stores firmware module paths in key-value pairs
 firmware_prefix="/lib/firmware/"            # path where firmware modules are located
 fixed_count=0                               # number of firmware modules we've managed to fix
 declare -A cmd_args=(["keep"]="False")      # command line arguments
 
-# print detailed usage information
+# print usage information
 print_usage () {
   cat << USAGE
 
@@ -30,7 +30,7 @@ Usage:
 ARGUMENTS:
   -h,--help      Display this help and exit.
   -m,--missing   Print missing firmware modules and exit.
-  -k,--keep      Keep the cloned Linux firmware git repository from deletion.
+  -k,--keep      Keep the cloned Linux firmware repository from deletion.
 USAGE
 }
 
@@ -51,7 +51,7 @@ parse_arguments () {
         break
         ;;
       -*)
-        print_message error "Unknown parameter passed: $1"
+        print_message error "Unknown parameter: $1"
         exit 1
         ;;
       *)
@@ -83,7 +83,7 @@ cut_out_firmware_name () {
   firm_token=${firm_token/#$firmware_prefix}
 }
 
-# tokenize (cuts out all) module names
+# tokenize module names
 tokenize_firmware () {
   counter=5
   # the below while loop needs a value upon which to check on
@@ -99,7 +99,7 @@ tokenize_firmware () {
 
 # clone Linux firmware repository
 clone_git () {
-  print_message good "Cloning: linux-firmware.git"
+  print_message good "Cloning Linux firmware repository"
   # maybe we have already cloned linux-firmware.git from earlier?
   if [[ -d $firmware_dir ]]; then
     cd $firmware_dir
@@ -136,7 +136,7 @@ check_if_source_exists () {
 
 # silently update an initramfs image
 silently_update_initramfs () {
-  print_message good "Issuing: update-initramfs -u"
+  print_message good "Updating initramfs images"
   stfu ${update_initramfs}
 }
 
