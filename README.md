@@ -37,4 +37,4 @@ It shows that the Intel i915 chip lacks some firmware, even though I have alread
 
 ## License
 
-This project is available under the Unlicense License. See the LICENSE file for more info.
+This project is available under the [GPLv3 license](LICENSE).

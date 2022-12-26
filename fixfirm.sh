@@ -1,5 +1,8 @@
 #!/bin/bash
 # shellcheck disable=SC2086,SC2164
+#
+# Copyright (C) 2020-2022 Tautvydas Povilaitis (belijzajac) and contributors
+# Distributed under the terms of The GNU Public License v3.0 (GPLv3)
 
 linux_firmware_git="git://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git"
 firmware_dir="linux-firmware"               # directory created after cloning linux-firmware.git
