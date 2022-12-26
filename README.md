@@ -1,6 +1,6 @@
 # fixfirm.sh
 
-[![License](https://img.shields.io/static/v1?label=license&message=UNLICENSE&color=9cf)](LICENSE)
+[![license](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
 
 ![FixFirm-preview](docs/fixfirm_preview.gif)
 
