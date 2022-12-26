@@ -2,7 +2,7 @@
 
 [![license](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
 
-![preview](docs/preview.mp4)
+https://user-images.githubusercontent.com/36075948/209587536-dd1a52ce-637d-41f9-8f07-25d42ae309ec.mp4
 
 ## About
 
@@ -13,7 +13,7 @@ Finds missing firmware kernel modules in initramfs images by running `update-ini
 ### The process behind the script
 
 1.   Runs `update-initramfs -u` to collect information about missing firmware
-2.   Clones `git://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git`
+2.   Clones `https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git`
 3.   Finds relevant missing binary modules and copies them over to `/lib/firmware/`
 4.   Runs `update-initramfs -u` once again to update initramfs images
 
