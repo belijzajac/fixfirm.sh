@@ -2,7 +2,7 @@
 
 [![license](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
 
-https://user-images.githubusercontent.com/36075948/209587536-dd1a52ce-637d-41f9-8f07-25d42ae309ec.mp4
+![preview](docs/preview.gif)
 
 ## About
 
