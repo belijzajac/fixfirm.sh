@@ -1,10 +1,10 @@
 #!/bin/bash
 # shellcheck disable=SC2086,SC2164
 #
-# Copyright (C) 2020-2023 Tautvydas Povilaitis (belijzajac) and contributors
+# Copyright (C) 2020-2024 Tautvydas Povilaitis (belijzajac) and contributors
 # Distributed under the terms of The GNU Public License v3.0 (GPLv3)
 
-version="1.0.15"
+version="1.0.16"
 linux_firmware_git="https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git"
 firmware_dir="linux-firmware"               # directory created after cloning linux-firmware.git
 update_initramfs="sudo update-initramfs -u" # -u means to update
@@ -73,7 +73,7 @@ get_missing_firmware () {
   # 1. redirect stderr to stdout
   # 2. redirect stdout to /dev/null
   # 3. use the $() to capture the redirected stderr
-  missing_firmware=$(${update_initramfs} 2>&1 >/dev/null)
+  missing_firmware=$(${update_initramfs} 2>&1 >/dev/null | grep "W: Possible missing firmware")
 }
 
 cut_out_firmware_name () {
